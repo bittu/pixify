@@ -7,7 +7,6 @@ const app = express();
 
 app.get("/", (req, res) => {
   console.log('Requested with url: ', req.query.url);
-  const startTime = Date.now();
   if (req.query.url) {
     request.get(req.query.url, async function (error, response, body) {
       if (!error && response.statusCode == 200) {
@@ -38,8 +37,7 @@ app.get("/", (req, res) => {
               'Content-Length': buff.length
             });
             res.end(buff);
-            const msElapsed = Date.now() - startTime;
-            console.log(req.query.url, `${width} x ${height} : image converted in ${msElapsed / 1000}s`);
+            console.log(req.query.url, `${width} x ${height} : image converted`);
           })
 
         })
