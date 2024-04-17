@@ -6,7 +6,7 @@ const Jimp = require('jimp');
 const app = express();
 
 app.get("/", (req, res) => {
-  console.log('Requested with url: ', );
+  console.log('Requested with url: ', req.query.url);
   if (req.query.url) {
     request.get(req.query.url, async function (error, response, body) {
       if (!error && response.statusCode == 200) {
