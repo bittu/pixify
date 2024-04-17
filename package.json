@@ -14,7 +14,7 @@
     "buffer-image-size": "^0.6.4",
     "express": "^4.19.2",
     "index.js": "^0.0.3",
-    "request": "^2.88.2",
-    "watermark-jimp": "^1.0.1"
+    "jimp": "^0.22.12",
+    "request": "^2.88.2"
   }
 }
