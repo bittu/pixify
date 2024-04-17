@@ -1,24 +1,29 @@
 const express = require("express");
-const webp = require('webp-converter');
 const request = require('request').defaults({ encoding: null });
+const sizeOf = require('buffer-image-size');
+const { createCanvas, loadImage } = require('@napi-rs/canvas')
 
 const app = express();
 
 app.get("/", (req, res) => {
-  // let result = webp.buffer2webpbuffer(data,"png","-q 80");
-  //   result.then(function(result) {
-  //     // you access the value from the promise here
-  //     console.log(result)
-  //   });
-  request.get(req.query.url, function (error, response, body) {
+  request.get(req.query.url, async function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      data = Buffer.from(body).toString('base64');
-      var img = Buffer.from(data, 'base64');
-      res.writeHead(200, {
-        'Content-Type': 'image/png',
-        'Content-Length': img.length
-      });
-      res.end(img);
+      const buffer = Buffer.from(body)
+      const {width, height} = sizeOf(buffer);
+
+      const canvas = createCanvas(width, height)
+      const ctx = canvas.getContext('2d')
+
+      loadImage(buffer).then(async (image) => {
+        ctx.drawImage(image, 0, 0, width, height)
+        const pngData = await canvas.encode('png')
+        res.writeHead(200, {
+          'Content-Type': 'image/png',
+          'Content-Length': pngData.length
+        });
+        res.end(pngData);
+      })
+
     }
   });
 });
