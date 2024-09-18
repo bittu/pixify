@@ -1,0 +1,22 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: svemula9
+# "app" enables Serverless Framework Dashboard features and sharing them with other Services.
+app: pixify
+# "service" is the name of this project. This will also be added to your AWS resource names.
+service: pixify
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  layers:
+   - arn:aws:lambda:us-east-1:205979422636:layer:napi-rs-canvas:888
+
+package:
+  exclude:
+    - node_modules/@napi-rs
+
+functions:
+  api:
+    handler: handler.handler
+    events:
+      - httpApi: "*"

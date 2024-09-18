@@ -1,4 +1,6 @@
 const express = require("express");
+const fs = require("fs");
+const serverless = require('serverless-http');
 const request = require('request').defaults({ encoding: null });
 const sizeOf = require('buffer-image-size');
 const { createCanvas, loadImage } = require('@napi-rs/canvas')
@@ -8,7 +10,7 @@ const app = express();
 const getWatermark = require('./watermark');
 const getFallback = require('./fallback');
 
-app.get("/", async (req, res) => {
+const processPixels = async (req, res) => {
   console.log('Requested with url: ', req.query.url);
   const startTime = Date.now();
   if (req.query.url) {
@@ -48,33 +50,37 @@ app.get("/", async (req, res) => {
         })
 
       } else {
-        console.error(req.query.url, ': image failed');
-        const fallback = await getFallback();
-
-        await fallback.quality(100).getBuffer(Jimp.MIME_PNG, (err, buff) => {
-          res.writeHead(200, {
-            'Content-Type': 'image/png',
-            'Content-Length': buff.length
-          });
-          res.end(buff);
-        })
+        console.error(req.query.url, ': image failed... falling back to netflix logo');
+        const buff = getFallback();
+        res.writeHead(200, {
+          'Content-Type': 'image/png',
+          'Content-Length': buff.length
+        });
+        res.end(buff);
       }
     });
   } else {
     console.log('No URL provided falling back to Netflix logo');
-    const fallback = await getFallback();
-    await fallback.quality(100).getBuffer(Jimp.MIME_PNG, (err, buff) => {
-      res.writeHead(200, {
-        'Content-Type': 'image/png',
-        'Content-Length': buff.length
-      });
-      res.end(buff);
-    })
+    const buff = getFallback();
+    res.writeHead(200, {
+      'Content-Type': 'image/png',
+      'Content-Length': buff.length
+    });
+    res.end(buff);
   }
-});
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+}
+
+app.get("/", (req, res) => {
+  processPixels(req, res);
 });
 
-module.exports = app;
+// const PORT = process.env.PORT || 5000;
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port ${PORT}`);
+// });
+
+// module.exports = app;
+
+exports.handler = serverless(app, {
+  binary: ['image/*']
+});
